@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
     console.log(req.query);
 });
 
+// Location callbacl
 const handleLocation = (req, res) => {
     const location = require('./data/location.json');
     const city = req.query.city;
@@ -30,7 +31,25 @@ const handleLocation = (req, res) => {
 }
 
 //Location route:
-app.get('/location', handleLocation)
+app.get('/location', handleLocation);
+
+
+// weather calllback
+const handleWeather = (req, res) => {
+    const weather = require('./data/weather.json');
+    const weatherRender = [];
+    weather.data.forEach(day => {
+        let eachDayWeather = new Weather(day)
+        weatherRender.push(eachDayWeather)
+    })
+    res.status(200).json(weatherRender);
+};
+
+
+//Weather route:
+app.get('/weather', handleWeather)
+
+
 
 
 
@@ -40,6 +59,12 @@ function Location(city, location) {
     this.formatted_query = location[0].display_name;
     this.latitude = location[0].lat;
     this.longitude = location[0].lon;
+}
+
+//weather constructor:
+function Weather(weather) {
+    this.forecast = weather.weather.description;
+    this.time = new Date(weather.valid_date).toDateString();
 }
 
 
