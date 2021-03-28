@@ -22,36 +22,29 @@ app.get('/', (req, res) => {
     console.log(req.query);
 });
 
-// Location callbacl
-const handleLocation = (req, res) => {
-    const location = require('./data/location.json');
-    const city = req.query.city;
-    const locationInfo = new Location(city, location);
-    res.status(200).json(locationInfo);
-}
-
 //Location route:
 app.get('/location', handleLocation);
-
-
-// weather calllback
-const handleWeather = (req, res) => {
-    const weather = require('./data/weather.json');
-    const weatherRender = [];
-    weather.data.forEach(day => {
-        let eachDayWeather = new Weather(day)
-        weatherRender.push(eachDayWeather)
-    })
-    res.status(200).json(weatherRender);
-};
-
 
 //Weather route:
 app.get('/weather', handleWeather)
 
+// Error
+app.use('*', notFoundHandler);
 
 
+// Location callback
+function handleLocation(req, res) {
+    try {
+        const location = require('./data/location.json');
+        const city = req.query.city;
+        const locationInfo = new Location(city, location);
+        res.status(200).send(locationInfo);
 
+    } catch (error) {
+        errorHandler(error, request, response);
+    }
+
+}
 
 //location constructor:
 function Location(city, location) {
@@ -61,12 +54,37 @@ function Location(city, location) {
     this.longitude = location[0].lon;
 }
 
+
+// weather calllback
+function handleWeather(req, res) {
+    try {
+        const weather = require('./data/weather.json');
+        const weatherRender = [];
+        weather.data.forEach(day => {
+            let eachDayWeather = new Weather(day)
+            weatherRender.push(eachDayWeather)
+        })
+        res.status(200).json(weatherRender);
+
+    } catch (error) {
+        errorHandler(error, request, response);
+    }
+};
+
 //weather constructor:
 function Weather(weather) {
     this.forecast = weather.weather.description;
     this.time = new Date(weather.valid_date).toDateString();
 }
 
+
+function errorHandler(error, req, res) {
+    res.status(500).send(error);
+}
+
+function notFoundHandler(req, res) {
+    res.status(404).send('HUH ?NOT FOUND!');
+}
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
